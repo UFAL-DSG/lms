@@ -34,17 +34,18 @@ def clean(n, lang, fn_i, fn_o):
                     if count < 5:
                         continue
 
-                    if set(wordform) - allowed[lang]:
-                        continue
+                    if wordform not in ['<s>', '</s>']:
+                        if set(wordform) - allowed[lang]:
+                            continue
+
+                        letter_set.update(set(wordform))
 
                     if n_words > n:
                         break
 
                     n_words += 1
 
-                    letter_set.update(set(wordform))
-                    o.write('{w} {c}'.format(w=wordform, c=count))
-                    o.write('\n')
+                    o.write('{w}\n'.format(w=wordform))
 
                 except UnicodeDecodeError:
                     print('UnicodeDecodeError')
