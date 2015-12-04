@@ -1,15 +1,30 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections import defaultdict
 
 allowed = {
-    'en': set('ABCDEFGHIJKLMNOPQRSTUVWXYZ\''),
     'cs': set('ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÝČĎĚŇŘŠŤŮŽ'),
+    'de': set('ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß'),
+    'en': set('ABCDEFGHIJKLMNOPQRSTUVWXYZ\''),
+    'es': set('ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑÜ'),
+    'fr': set('ABCDEFGHIJKLMNOPQRSTUVWXYZÉÑËÏŸÜÀÈÙÂÊÎÔÛÇÆ\''),
+    'ru': set('АБВДЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'),
+    'pt': set('ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑÜÌÀÇÃÊÇÒÔÕÂ'),
 }
 
+excluded = set('0123456789!?",.:\/{}()[]¢¦§¨ª®°²½¿│║▀▖▚▜■▪▬˚—ₔ'
+               '▲◀◄◎◘☁★☆☋☠☣☤☦☪【￝£–―‚†•′‹⁄€™←↑→↓⇒≄⋅#$%&*+-;<=>'
+               '@^_`|~·¸¹ˑГЕ‖₁₌ℂ↔⇇⇑⇗⇚⇞≁≇⌐┃┊└╌═╝▁▇▊▋▒▸◊○☀☂☊☚☜✔✦'
+               '➝勓鎘鎮隓ƒʜ×Øø๎:ᚅọ‐‘…⇔✑❝❞№⇘─Є¤©¬­±³¶º»¼¾↩−∙∼≤'
+               '►▼●♡♥♦♫�’“″’›∇∑∗√∞≈≡≥━┣╬□▫▶◆◙☺☼♀♂♠♣♪✖❤哻嫳鎙鏮'
+               '隳:1₡↳∇∑₴”℗⇄⇆∂∅⌘✓✭‡‣※₹℃↵∈∧∨≠⊕⊖〉Ⓒ▄█░▓'
+               '¥▾◇◦☎☛☞♔♛♬✧✿❑➜、。」』】・），：；｜～￥'
+               '‑‰₂₪▮▷☻♐✏✱➢')
 
 def clean(n, lang, fn_i, fn_o):
-    letter_set = set()
+    letter_set = defaultdict(int)
+    letter_set_ex = defaultdict(int)
 
     n_words = 0
     with open(fn_i, 'rt', encoding='utf8') as i:
@@ -36,9 +51,13 @@ def clean(n, lang, fn_i, fn_o):
 
                     if wordform not in ['<s>', '</s>']:
                         if set(wordform) - allowed[lang]:
+                            print(wordform)
+                            for c in set(wordform) - allowed[lang] - excluded:
+                                letter_set_ex[c] += 1
                             continue
 
-                        letter_set.update(set(wordform))
+                        for c in wordform:
+                            letter_set[c] += 1
 
                     if n_words > n:
                         break
@@ -51,7 +70,7 @@ def clean(n, lang, fn_i, fn_o):
                     print('UnicodeDecodeError')
                     pass
 
-    return letter_set
+    return letter_set, letter_set_ex
 
 
 if __name__ == '__main__':
@@ -68,10 +87,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    letter_set = clean(args.n, args.lang, args.input, args.output)
+    letter_set, letter_set_ex = clean(args.n, args.lang, args.input, args.output)
 
     print('The letter set:')
-    print(' '.join(sorted(letter_set)))
+    for k, v in sorted(letter_set.items()):
+        print('{l}:{c}'.format(l=k, c=v), end=' ')
+    print('')
+    print('')
+
+    print('The letter set of exluded word forms:')
+    for k, v in sorted(letter_set_ex.items()):
+        print('{l}:{c}'.format(l=k, c=v), end=' ')
+    print('')
 
     print('')
     print('')

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-LANG=$1
-TMP=$2
-NW=$3
-NS=$4
+LANG=en
+TMP=tmp/en
+NW=$1
+NS=$2
 
 export IRSTLM=./tools/
 BIN_PATH=./tools/bin
@@ -11,12 +11,11 @@ BIN_PATH=./tools/bin
 
 mkdir -p $TMP
 
-SOURCE="xzcat -Q ${TMP}/${LANG}.xz"
-SOURCE="xzcat -Q ${TMP}/${LANG}.xz | head -n $NS"
-#FILTER="LC_ALL=${LOCALE}.UTF-8 tr '[:lower:]' '[:upper:]' | LC_ALL=C.UTF-8 tr '?,.:ěščřžýáíéůúóďťňöäëüïÿåõñìèàîîêôôûâçòæ' '    ĚŠČŘŽÝÁÍÉŮÚÓĎŤŇÖÄËÜÏŸÅÕÑÌÈÀÎÎÊÔÔÛÂÇÒÆ'"
+SOURCE="xzcat -Q ${TMP}/en.10.xz ${TMP}/en.90.xz | head -n $NS"
 FILTER="python3 ./src/upper.py"
 
-[ ! -f "$TMP/${LANG}.xz" ] && wget http://data.statmt.org/ngrams/deduped/${LANG}.xz -O $TMP/${LANG}.xz
+[ ! -f "$TMP/en.10.xz" ] && wget http://data.statmt.org/ngrams/deduped_en/en.10.xz -O $TMP/en.10.xz
+[ ! -f "$TMP/en.90.xz" ] && wget http://data.statmt.org/ngrams/deduped_en/en.90.xz -O $TMP/en.90.xz
 
 [ ! -f "${TMP}/01_dict.full" ] && ${BIN_PATH}/dict -i="$SOURCE | $FILTER | ${BIN_PATH}/add-start-end.sh" \
     -o=${TMP}/01_dict.full -f=y -sort=y
